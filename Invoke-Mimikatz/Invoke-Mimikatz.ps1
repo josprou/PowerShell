@@ -54,8 +54,6 @@ $RemoteScriptBlock = {
 	{
 		$Win32Types = New-Object System.Object
 
-		#Define all the structures/enums that will be used
-		#	This article shows you how to do this with reflection: http://www.exploit-monday.com/2012/07/structs-and-enums-using-reflection.html
 		$Domain = [AppDomain]::CurrentDomain
 		$DynamicAssembly = New-Object System.Reflection.AssemblyName('DynamicAssembly')
 		$AssemblyBuilder = $Domain.DefineDynamicAssembly($DynamicAssembly, [System.Reflection.Emit.AssemblyBuilderAccess]::Run)
@@ -63,8 +61,6 @@ $RemoteScriptBlock = {
 		$ConstructorInfo = [System.Runtime.InteropServices.MarshalAsAttribute].GetConstructors()[0]
 
 
-		############    ENUM    ############
-		#Enum MachineType
 		$TypeBuilder = $ModuleBuilder.DefineEnum('MachineType', 'Public', [UInt16])
 		$TypeBuilder.DefineLiteral('Native', [UInt16] 0) | Out-Null
 		$TypeBuilder.DefineLiteral('I386', [UInt16] 0x014c) | Out-Null
@@ -73,14 +69,12 @@ $RemoteScriptBlock = {
 		$MachineType = $TypeBuilder.CreateType()
 		$Win32Types | Add-Member -MemberType NoteProperty -Name MachineType -Value $MachineType
 
-		#Enum MagicType
 		$TypeBuilder = $ModuleBuilder.DefineEnum('MagicType', 'Public', [UInt16])
 		$TypeBuilder.DefineLiteral('IMAGE_NT_OPTIONAL_HDR32_MAGIC', [UInt16] 0x10b) | Out-Null
 		$TypeBuilder.DefineLiteral('IMAGE_NT_OPTIONAL_HDR64_MAGIC', [UInt16] 0x20b) | Out-Null
 		$MagicType = $TypeBuilder.CreateType()
 		$Win32Types | Add-Member -MemberType NoteProperty -Name MagicType -Value $MagicType
 
-		#Enum SubSystemType
 		$TypeBuilder = $ModuleBuilder.DefineEnum('SubSystemType', 'Public', [UInt16])
 		$TypeBuilder.DefineLiteral('IMAGE_SUBSYSTEM_UNKNOWN', [UInt16] 0) | Out-Null
 		$TypeBuilder.DefineLiteral('IMAGE_SUBSYSTEM_NATIVE', [UInt16] 1) | Out-Null
@@ -96,7 +90,6 @@ $RemoteScriptBlock = {
 		$SubSystemType = $TypeBuilder.CreateType()
 		$Win32Types | Add-Member -MemberType NoteProperty -Name SubSystemType -Value $SubSystemType
 
-		#Enum DllCharacteristicsType
 		$TypeBuilder = $ModuleBuilder.DefineEnum('DllCharacteristicsType', 'Public', [UInt16])
 		$TypeBuilder.DefineLiteral('RES_0', [UInt16] 0x0001) | Out-Null
 		$TypeBuilder.DefineLiteral('RES_1', [UInt16] 0x0002) | Out-Null
@@ -114,8 +107,6 @@ $RemoteScriptBlock = {
 		$DllCharacteristicsType = $TypeBuilder.CreateType()
 		$Win32Types | Add-Member -MemberType NoteProperty -Name DllCharacteristicsType -Value $DllCharacteristicsType
 
-		###########    STRUCT    ###########
-		#Struct IMAGE_DATA_DIRECTORY
 		$Attributes = 'AutoLayout, AnsiClass, Class, Public, ExplicitLayout, Sealed, BeforeFieldInit'
 		$TypeBuilder = $ModuleBuilder.DefineType('IMAGE_DATA_DIRECTORY', $Attributes, [System.ValueType], 8)
 		($TypeBuilder.DefineField('VirtualAddress', [UInt32], 'Public')).SetOffset(0) | Out-Null
@@ -123,7 +114,6 @@ $RemoteScriptBlock = {
 		$IMAGE_DATA_DIRECTORY = $TypeBuilder.CreateType()
 		$Win32Types | Add-Member -MemberType NoteProperty -Name IMAGE_DATA_DIRECTORY -Value $IMAGE_DATA_DIRECTORY
 
-		#Struct IMAGE_FILE_HEADER
 		$Attributes = 'AutoLayout, AnsiClass, Class, Public, SequentialLayout, Sealed, BeforeFieldInit'
 		$TypeBuilder = $ModuleBuilder.DefineType('IMAGE_FILE_HEADER', $Attributes, [System.ValueType], 20)
 		$TypeBuilder.DefineField('Machine', [UInt16], 'Public') | Out-Null
@@ -136,7 +126,6 @@ $RemoteScriptBlock = {
 		$IMAGE_FILE_HEADER = $TypeBuilder.CreateType()
 		$Win32Types | Add-Member -MemberType NoteProperty -Name IMAGE_FILE_HEADER -Value $IMAGE_FILE_HEADER
 
-		#Struct IMAGE_OPTIONAL_HEADER64
 		$Attributes = 'AutoLayout, AnsiClass, Class, Public, ExplicitLayout, Sealed, BeforeFieldInit'
 		$TypeBuilder = $ModuleBuilder.DefineType('IMAGE_OPTIONAL_HEADER64', $Attributes, [System.ValueType], 240)
 		($TypeBuilder.DefineField('Magic', $MagicType, 'Public')).SetOffset(0) | Out-Null
@@ -187,7 +176,6 @@ $RemoteScriptBlock = {
 		$IMAGE_OPTIONAL_HEADER64 = $TypeBuilder.CreateType()
 		$Win32Types | Add-Member -MemberType NoteProperty -Name IMAGE_OPTIONAL_HEADER64 -Value $IMAGE_OPTIONAL_HEADER64
 
-		#Struct IMAGE_OPTIONAL_HEADER32
 		$Attributes = 'AutoLayout, AnsiClass, Class, Public, ExplicitLayout, Sealed, BeforeFieldInit'
 		$TypeBuilder = $ModuleBuilder.DefineType('IMAGE_OPTIONAL_HEADER32', $Attributes, [System.ValueType], 224)
 		($TypeBuilder.DefineField('Magic', $MagicType, 'Public')).SetOffset(0) | Out-Null
@@ -239,7 +227,6 @@ $RemoteScriptBlock = {
 		$IMAGE_OPTIONAL_HEADER32 = $TypeBuilder.CreateType()
 		$Win32Types | Add-Member -MemberType NoteProperty -Name IMAGE_OPTIONAL_HEADER32 -Value $IMAGE_OPTIONAL_HEADER32
 
-		#Struct IMAGE_NT_HEADERS64
 		$Attributes = 'AutoLayout, AnsiClass, Class, Public, SequentialLayout, Sealed, BeforeFieldInit'
 		$TypeBuilder = $ModuleBuilder.DefineType('IMAGE_NT_HEADERS64', $Attributes, [System.ValueType], 264)
 		$TypeBuilder.DefineField('Signature', [UInt32], 'Public') | Out-Null
@@ -248,7 +235,6 @@ $RemoteScriptBlock = {
 		$IMAGE_NT_HEADERS64 = $TypeBuilder.CreateType()
 		$Win32Types | Add-Member -MemberType NoteProperty -Name IMAGE_NT_HEADERS64 -Value $IMAGE_NT_HEADERS64
 		
-		#Struct IMAGE_NT_HEADERS32
 		$Attributes = 'AutoLayout, AnsiClass, Class, Public, SequentialLayout, Sealed, BeforeFieldInit'
 		$TypeBuilder = $ModuleBuilder.DefineType('IMAGE_NT_HEADERS32', $Attributes, [System.ValueType], 248)
 		$TypeBuilder.DefineField('Signature', [UInt32], 'Public') | Out-Null
@@ -314,7 +300,6 @@ $RemoteScriptBlock = {
 		$IMAGE_SECTION_HEADER = $TypeBuilder.CreateType()
 		$Win32Types | Add-Member -MemberType NoteProperty -Name IMAGE_SECTION_HEADER -Value $IMAGE_SECTION_HEADER
 
-		#Struct IMAGE_BASE_RELOCATION
 		$Attributes = 'AutoLayout, AnsiClass, Class, Public, SequentialLayout, Sealed, BeforeFieldInit'
 		$TypeBuilder = $ModuleBuilder.DefineType('IMAGE_BASE_RELOCATION', $Attributes, [System.ValueType], 8)
 		$TypeBuilder.DefineField('VirtualAddress', [UInt32], 'Public') | Out-Null
@@ -322,7 +307,6 @@ $RemoteScriptBlock = {
 		$IMAGE_BASE_RELOCATION = $TypeBuilder.CreateType()
 		$Win32Types | Add-Member -MemberType NoteProperty -Name IMAGE_BASE_RELOCATION -Value $IMAGE_BASE_RELOCATION
 
-		#Struct IMAGE_IMPORT_DESCRIPTOR
 		$Attributes = 'AutoLayout, AnsiClass, Class, Public, SequentialLayout, Sealed, BeforeFieldInit'
 		$TypeBuilder = $ModuleBuilder.DefineType('IMAGE_IMPORT_DESCRIPTOR', $Attributes, [System.ValueType], 20)
 		$TypeBuilder.DefineField('Characteristics', [UInt32], 'Public') | Out-Null
@@ -333,7 +317,6 @@ $RemoteScriptBlock = {
 		$IMAGE_IMPORT_DESCRIPTOR = $TypeBuilder.CreateType()
 		$Win32Types | Add-Member -MemberType NoteProperty -Name IMAGE_IMPORT_DESCRIPTOR -Value $IMAGE_IMPORT_DESCRIPTOR
 
-		#Struct IMAGE_EXPORT_DIRECTORY
 		$Attributes = 'AutoLayout, AnsiClass, Class, Public, SequentialLayout, Sealed, BeforeFieldInit'
 		$TypeBuilder = $ModuleBuilder.DefineType('IMAGE_EXPORT_DIRECTORY', $Attributes, [System.ValueType], 40)
 		$TypeBuilder.DefineField('Characteristics', [UInt32], 'Public') | Out-Null
@@ -350,7 +333,6 @@ $RemoteScriptBlock = {
 		$IMAGE_EXPORT_DIRECTORY = $TypeBuilder.CreateType()
 		$Win32Types | Add-Member -MemberType NoteProperty -Name IMAGE_EXPORT_DIRECTORY -Value $IMAGE_EXPORT_DIRECTORY
 		
-		#Struct LUID
 		$Attributes = 'AutoLayout, AnsiClass, Class, Public, SequentialLayout, Sealed, BeforeFieldInit'
 		$TypeBuilder = $ModuleBuilder.DefineType('LUID', $Attributes, [System.ValueType], 8)
 		$TypeBuilder.DefineField('LowPart', [UInt32], 'Public') | Out-Null
@@ -358,7 +340,6 @@ $RemoteScriptBlock = {
 		$LUID = $TypeBuilder.CreateType()
 		$Win32Types | Add-Member -MemberType NoteProperty -Name LUID -Value $LUID
 		
-		#Struct LUID_AND_ATTRIBUTES
 		$Attributes = 'AutoLayout, AnsiClass, Class, Public, SequentialLayout, Sealed, BeforeFieldInit'
 		$TypeBuilder = $ModuleBuilder.DefineType('LUID_AND_ATTRIBUTES', $Attributes, [System.ValueType], 12)
 		$TypeBuilder.DefineField('Luid', $LUID, 'Public') | Out-Null
@@ -366,7 +347,6 @@ $RemoteScriptBlock = {
 		$LUID_AND_ATTRIBUTES = $TypeBuilder.CreateType()
 		$Win32Types | Add-Member -MemberType NoteProperty -Name LUID_AND_ATTRIBUTES -Value $LUID_AND_ATTRIBUTES
 		
-		#Struct TOKEN_PRIVILEGES
 		$Attributes = 'AutoLayout, AnsiClass, Class, Public, SequentialLayout, Sealed, BeforeFieldInit'
 		$TypeBuilder = $ModuleBuilder.DefineType('TOKEN_PRIVILEGES', $Attributes, [System.ValueType], 16)
 		$TypeBuilder.DefineField('PrivilegeCount', [UInt32], 'Public') | Out-Null
